@@ -9,7 +9,7 @@ A Python-based tool to extract and remove EXIF metadata from images.
 
 ## Installation
 ```bash
-git clone https://github.com/YOUR-USERNAME/error-v4u-exif-tool.git
+git clone https://github.com/ERR0R-V4U/error-v4u-exif-tool.git
 cd error-v4u-exif-tool
 pip install -r requirements.txt
 python ERR0R-V4U_ExifTool.py
