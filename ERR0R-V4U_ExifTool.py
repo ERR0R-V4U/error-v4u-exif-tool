@@ -6,28 +6,45 @@ from PIL.ExifTags import TAGS, GPSTAGS
 
 def banner():
     print(r"""
+███████╗██╗  ██╗██╗███████╗    ████████╗ ██████╗  ██████╗ ██╗     ███████╗
+██╔════╝╚██╗██╔╝██║██╔════╝    ╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██╔════╝
+█████╗   ╚███╔╝ ██║█████╗         ██║   ██║   ██║██║   ██║██║     ███████╗
+██╔══╝   ██╔██╗ ██║██╔══╝         ██║   ██║   ██║██║   ██║██║     ╚════██║
+███████╗██╔╝ ██╗██║██║            ██║   ╚██████╔╝╚██████╔╝███████╗███████║
+╚══════╝╚═╝  ╚═╝╚═╝╚═╝            ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
+                                                                                                                                         
+           🔍 EXIF DATA EXTRACTOR & CLEANER TOOL
+                 BY: ERR0R-V4U 🧠
+""")
 
-
-███████╗██████╗  ██████╗  ██████╗ ██████╗     ███████╗██╗  ██╗██╗███████╗    ████████╗ ██████╗  ██████╗ ██╗     ███████╗
-██╔════╝██╔══██╗██╔═══██╗██╔═══██╗██╔══██╗    ██╔════╝╚██╗██╔╝██║██╔════╝    ╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██╔════╝
-█████╗  ██████╔╝██║   ██║██║   ██║██████╔╝    █████╗   ╚███╔╝ ██║█████╗         ██║   ██║   ██║██║   ██║██║     ███████╗
-██╔══╝  ██╔══██╗██║   ██║██║   ██║██╔══██╗    ██╔══╝   ██╔██╗ ██║██╔══╝         ██║   ██║   ██║██║   ██║██║     ╚════██║
-███████╗██║  ██║╚██████╔╝╚██████╔╝██║  ██║    ███████╗██╔╝ ██╗██║██║            ██║   ╚██████╔╝╚██████╔╝███████╗███████║
-╚══════╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ╚══════╝╚═╝  ╚═╝╚═╝╚═╝            ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
-                                                                                                                                                                                                                                                                                                                                                                     
-   🔍 EXIF DATA EXTRACTOR & CLEANER TOOL
-         BY: ERR0R-V4U 😈
+def owner_info():
+    print("""
+==============================
+        Tools Owner Info
+==============================
+[📘] Facebook Page : https://www.facebook.com/profile.php?id=61564222827738
+[📢] Telegram Channel: https://t.me/ERR0R_V4U_Your_Love
 """)
 
 def extract_exif(image_path):
-    image = Image.open(image_path)
-    info = image._getexif()
-    exif_data = {}
-    if info:
-        for tag, value in info.items():
-            tag_name = TAGS.get(tag, tag)
-            exif_data[tag_name] = value
-    return exif_data
+    try:
+        image = Image.open(image_path)
+        info = image._getexif()
+        exif_data = {}
+        if info:
+            for tag, value in info.items():
+                tag_name = TAGS.get(tag, tag)
+                # Decode bytes if possible (like UserComment)
+                if isinstance(value, bytes):
+                    try:
+                        value = value.decode(errors='replace')
+                    except Exception:
+                        pass
+                exif_data[tag_name] = value
+        return exif_data
+    except Exception as e:
+        print(f"[-] Error extracting EXIF data: {e}")
+        return {}
 
 def get_gps_info(exif_data):
     gps_info = exif_data.get("GPSInfo", {})
@@ -65,7 +82,7 @@ def get_location_name(lat, lon):
     try:
         url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}&zoom=10&addressdetails=1"
         headers = {'User-Agent': 'ERR0R-V4U-EXIF-Tool'}
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             data = response.json()
             address = data.get("address", {})
@@ -80,35 +97,61 @@ def get_location_name(lat, lon):
         return f"Error: {str(e)}"
 
 def save_json(data, filename):
-    with open(filename, 'w') as f:
-        json.dump(data, f, indent=4)
-    print(f"[+] Saved EXIF data to {filename}")
+    try:
+        with open(filename, 'w') as f:
+            json.dump(data, f, indent=4)
+        print(f"[+] Saved EXIF data to {filename}")
+    except Exception as e:
+        print(f"[-] Failed to save JSON: {e}")
 
 def remove_exif(image_path, output_path):
-    image = Image.open(image_path)
-    data = list(image.getdata())
-    image_without_exif = Image.new(image.mode, image.size)
-    image_without_exif.putdata(data)
-    image_without_exif.save(output_path)
-    print(f"[+] EXIF data removed and saved to {output_path}")
+    try:
+        image = Image.open(image_path)
+        data = list(image.getdata())
+        image_without_exif = Image.new(image.mode, image.size)
+        image_without_exif.putdata(data)
+        image_without_exif.save(output_path)
+        print(f"[+] EXIF data removed and saved to {output_path}")
+    except Exception as e:
+        print(f"[-] Failed to remove EXIF data: {e}")
 
 def camera_info(exif_data):
-    keys = ['Make', 'Model', 'LensModel', 'Software']
-    return {k: exif_data[k] for k in keys if k in exif_data}
+    keys = ['Make', 'Model', 'LensModel', 'Software', 'DateTimeOriginal', 'ExposureTime', 'FNumber', 'ISOSpeedRatings', 'FocalLength']
+    info = {}
+    for k in keys:
+        if k in exif_data:
+            info[k] = exif_data[k]
+    return info
 
-def owner_info():
-    print("""
-==============================
-        Tools Owner Info
-==============================
-[📘] Facebook Page : https://www.facebook.com/profile.php?id=61564222827738
-[📢] Telegram Channel: https://t.me/ERR0R_V4U_Your_Love
-""")
+def format_exif(exif_data):
+    # Format EXIF data for better readability
+    formatted = {}
+    for key, val in exif_data.items():
+        if isinstance(val, bytes):
+            try:
+                val = val.decode(errors='replace')
+            except:
+                pass
+
+        # Format rational tuples like (1, 125) to "1/125"
+        if isinstance(val, tuple) and len(val) == 2 and all(isinstance(x, int) for x in val):
+            val = f"{val[0]}/{val[1]}"
+        
+        # Convert certain numeric fields to human-readable strings
+        if key == 'ExposureTime' and isinstance(val, tuple):
+            val = f"{val[0]}/{val[1]} sec"
+        elif key == 'FNumber' and isinstance(val, tuple):
+            val = val[0] / val[1]
+        elif key == 'FocalLength' and isinstance(val, tuple):
+            val = f"{val[0] / val[1]} mm"
+
+        formatted[key] = val
+    return formatted
 
 def menu():
     print("""
 ==============================
-    ERR0R-EXIF TOOLS MENU
+        ERR0R-V4U TOOL MENU
 ==============================
 
 [1] Extract EXIF Data & Display
@@ -120,22 +163,23 @@ def menu():
 """)
 
 def main():
-    banner()
     owner_info()
+    banner()
     image_path = input("[?] Enter image path: ").strip()
     if not os.path.exists(image_path):
         print("[-] File not found.")
         return
 
     exif_data = extract_exif(image_path)
+    formatted_exif = format_exif(exif_data) if exif_data else {}
 
     while True:
         menu()
         choice = input("[?] Enter your choice: ").strip()
 
         if choice == '1':
-            if exif_data:
-                for key, val in exif_data.items():
+            if formatted_exif:
+                for key, val in formatted_exif.items():
                     print(f"{key}: {val}")
             else:
                 print("[-] No EXIF data found.")
@@ -145,6 +189,7 @@ def main():
         elif choice == '3':
             gps = get_gps_info(exif_data)
             if gps and "Latitude" in gps and "Longitude" in gps:
+                print("Raw GPS Data:")
                 print(json.dumps(gps, indent=4))
                 location_name = get_location_name(gps["Latitude"], gps["Longitude"])
                 print(f"📍 Approximate Location: {location_name}")
@@ -153,19 +198,18 @@ def main():
         elif choice == '4':
             cam = camera_info(exif_data)
             if cam:
+                print("Camera Info:")
                 print(json.dumps(cam, indent=4))
             else:
                 print("[-] No camera info found.")
         elif choice == '5':
             if exif_data:
-                filename = input("[+] Enter filename to save JSON (e.g., exif_data.json): ").strip()
-                if filename == "":
-                    filename = "exif_data.json"
-                save_json(exif_data, filename)
+                save_json(formatted_exif, "exif_data.json")
             else:
                 print("[-] No EXIF data to save.")
         elif choice == '6':
             print("[+] Exiting. Thanks for using ERR0R-V4U tool.")
+            owner_info()
             break
         else:
             print("[-] Invalid choice. Please enter a number between 1-6.")
