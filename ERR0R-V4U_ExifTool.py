@@ -13,7 +13,6 @@ def banner():
 ███████╗██║  ██║██║  ██║╚██████╔╝██║  ██║       ╚████╔╝      ██║╚██████╔╝
 ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝        ╚═══╝       ╚═╝ ╚═════╝ 
                                                                          
-
            🔍 EXIF DATA EXTRACTOR & CLEANER TOOL
                  BY: ERR0R-V4U 🧠
 """)
@@ -37,9 +36,14 @@ def get_gps_info(exif_data):
             gps_data[decoded] = gps_info[key]
 
         def convert_to_degrees(value):
-            d = value[0][0] / value[0][1]
-            m = value[1][0] / value[1][1]
-            s = value[2][0] / value[2][1]
+            try:
+                d = value[0][0] / value[0][1]
+                m = value[1][0] / value[1][1]
+                s = value[2][0] / value[2][1]
+            except TypeError:
+                d = float(value[0])
+                m = float(value[1])
+                s = float(value[2])
             return d + (m / 60.0) + (s / 3600.0)
 
         if "GPSLatitude" in gps_data and "GPSLatitudeRef" in gps_data:
@@ -89,6 +93,15 @@ def remove_exif(image_path, output_path):
 def camera_info(exif_data):
     keys = ['Make', 'Model', 'LensModel', 'Software']
     return {k: exif_data[k] for k in keys if k in exif_data}
+
+def owner_info():
+    print("""
+==============================
+        Tools Owner Info
+==============================
+[📘] Facebook Page : https://www.facebook.com/profile.php?id=61564222827738
+[📢] Telegram Channel: https://t.me/ERR0R_V4U_Your_Love
+""")
 
 def menu():
     print("""
@@ -147,6 +160,7 @@ def main():
                 print("[-] No EXIF data to save.")
         elif choice == '6':
             print("[+] Exiting. Thanks for using ERR0R-V4U tool.")
+            owner_info()
             break
         else:
             print("[-] Invalid choice. Please enter a number between 1-6.")
