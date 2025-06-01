@@ -3,6 +3,7 @@ import json
 import requests
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
+from PIL.TiffImagePlugin import IFDRational
 
 def banner():
     print(r"""
@@ -12,7 +13,7 @@ def banner():
 ██╔══╝   ██╔██╗ ██║██╔══╝         ██║   ██║   ██║██║   ██║██║     ╚════██║
 ███████╗██╔╝ ██╗██║██║            ██║   ╚██████╔╝╚██████╔╝███████╗███████║
 ╚══════╝╚═╝  ╚═╝╚═╝╚═╝            ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
-                                                                                                                                         
+                                                                                                                                          
            🔍 EXIF DATA EXTRACTOR & CLEANER TOOL
                  BY: ERR0R-V4U 🧠
 """)
@@ -34,7 +35,7 @@ def extract_exif(image_path):
         if info:
             for tag, value in info.items():
                 tag_name = TAGS.get(tag, tag)
-                # Decode bytes if possible (like UserComment)
+                # Decode bytes if possible
                 if isinstance(value, bytes):
                     try:
                         value = value.decode(errors='replace')
@@ -124,7 +125,6 @@ def camera_info(exif_data):
     return info
 
 def format_exif(exif_data):
-    # Format EXIF data for better readability
     formatted = {}
     for key, val in exif_data.items():
         if isinstance(val, bytes):
@@ -133,17 +133,21 @@ def format_exif(exif_data):
             except:
                 pass
 
-        # Format rational tuples like (1, 125) to "1/125"
-        if isinstance(val, tuple) and len(val) == 2 and all(isinstance(x, int) for x in val):
-            val = f"{val[0]}/{val[1]}"
-        
-        # Convert certain numeric fields to human-readable strings
-        if key == 'ExposureTime' and isinstance(val, tuple):
-            val = f"{val[0]}/{val[1]} sec"
-        elif key == 'FNumber' and isinstance(val, tuple):
-            val = val[0] / val[1]
-        elif key == 'FocalLength' and isinstance(val, tuple):
-            val = f"{val[0] / val[1]} mm"
+        # Convert IFDRational to float
+        if isinstance(val, IFDRational):
+            val = float(val)
+
+        if isinstance(val, tuple):
+            val = tuple(float(v) if isinstance(v, IFDRational) else v for v in val)
+
+            if key == 'ExposureTime' and len(val) == 2:
+                val = f"{val[0]}/{val[1]} sec"
+            elif key == 'FNumber' and len(val) == 2:
+                val = val[0] / val[1]
+            elif key == 'FocalLength' and len(val) == 2:
+                val = f"{val[0] / val[1]} mm"
+            else:
+                val = str(val)
 
         formatted[key] = val
     return formatted
