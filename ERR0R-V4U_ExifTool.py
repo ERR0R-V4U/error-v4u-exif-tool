@@ -13,9 +13,9 @@ def banner():
 ██╔══╝   ██╔██╗ ██║██╔══╝         ██║   ██║   ██║██║   ██║██║     ╚════██║
 ███████╗██╔╝ ██╗██║██║            ██║   ╚██████╔╝╚██████╔╝███████╗███████║
 ╚══════╝╚═╝  ╚═╝╚═╝╚═╝            ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
-                                                                                                                                        
+                                                                                                                                            
            🔍 EXIF DATA EXTRACTOR & CLEANER TOOL
-                 BY: ERR0R-V4U 🧠
+                        BY: ERR0R-V4U
 """)
 
 def owner_info():
@@ -35,7 +35,6 @@ def extract_exif(image_path):
         if info:
             for tag, value in info.items():
                 tag_name = TAGS.get(tag, tag)
-                # Decode bytes if possible
                 if isinstance(value, bytes):
                     try:
                         value = value.decode(errors='replace')
@@ -133,7 +132,6 @@ def format_exif(exif_data):
             except:
                 pass
 
-        # Convert IFDRational to float
         if isinstance(val, IFDRational):
             val = float(val)
 
@@ -193,9 +191,10 @@ def main():
         elif choice == '3':
             gps = get_gps_info(exif_data)
             if gps and "Latitude" in gps and "Longitude" in gps:
+                formatted_gps = format_exif(gps)
                 print("Raw GPS Data:")
-                print(json.dumps(gps, indent=4))
-                location_name = get_location_name(gps["Latitude"], gps["Longitude"])
+                print(json.dumps(formatted_gps, indent=4))
+                location_name = get_location_name(formatted_gps["Latitude"], formatted_gps["Longitude"])
                 print(f"📍 Approximate Location: {location_name}")
             else:
                 print("[-] No GPS data found.")
